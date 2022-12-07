@@ -6,6 +6,7 @@ val rps_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/rps.
 val rucksack_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/rucksack.txt"
 val cleanup_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/cleanup.txt"
 val cont_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/container.txt"
+val sig_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/signal.txt"
 
 @main def maxcalorie: Unit =  
   var c: Int = 0;
@@ -143,3 +144,28 @@ var ship_2: scala.collection.mutable.Map[Int, String] = scala.collection.mutable
     result += v.takeRight(1)
     } 
   println(result)
+
+var c: Int = 0;
+var check: Int = 0; 
+val start_marker: Int = 14;
+
+@main def signal_1: Unit =
+  var old_char: String = ""
+  for(line <- Source.fromFile(sig_file).getLines) {
+  breakable{
+    for (item <- line){
+      if (old_char.length < start_marker){
+        old_char += item.toString
+      }
+      if (old_char.length == start_marker){
+        if (old_char.distinct.length == old_char.length){
+          println(c)
+          break()
+        }
+        old_char = old_char.drop(1)
+        old_char += item.toString
+      }
+      c += 1
+    }
+  }
+}
