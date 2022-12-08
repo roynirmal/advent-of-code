@@ -1,12 +1,17 @@
 import scala.io.Source
 import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks._
+import scala.collection.mutable.{Map => MutableMap}
+import collection.JavaConverters.seqAsJavaListConverter
+// import scala.collection.mutable.{Map => MutableMap, MutableList}
 val filename = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/calorie.txt"
 val rps_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/rps.txt"
 val rucksack_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/rucksack.txt"
 val cleanup_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/cleanup.txt"
 val cont_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/container.txt"
 val sig_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/signal.txt"
+val size_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/filesize.txt"
+val tree_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/tree.txt"
 
 @main def maxcalorie: Unit =  
   var c: Int = 0;
@@ -169,3 +174,118 @@ val start_marker: Int = 14;
     }
   }
 }
+
+
+@main def dir_1: Unit = 
+  var listing: Boolean = false
+  var last_dir: String = ""
+  var dir_size = scala.collection.mutable.Map[String, Int]()
+  var dir_cum_size = scala.collection.mutable.Map[String, Int]()
+  var dir_struct = MutableMap[String, ListBuffer[String]]()
+  var parent: String = ""
+  var me: String = ""
+  case class Tree(value: Int, child: Tree)
+  // val sessionVariable: MutableMap[String, Int] = MutableMap()
+  for(line <- Source.fromFile(size_file).getLines) {
+    var commands = line.split(" ")
+    if (commands(0) == "$"){
+      listing = false
+    }
+    if (listing == true){
+      if (commands(0) == "dir"){
+        var child = commands(1)
+        // path_string += last_dir + "_" + commands(1)
+        println(parent + "_" + me + "_" + child)  
+
+      } else {
+        // println(commands(1))
+        if (dir_size.exists(_._1 == last_dir)){
+          dir_size(last_dir) += commands(0).toInt
+        } else {
+          dir_size(last_dir) = commands(0).toInt
+        }
+        
+      }
+    }
+    if (commands(1) == "cd"){
+      parent = me
+      me = commands(2)  
+    }
+    if(commands(1) == "ls"){
+      // println(last_dir)  
+      listing = true
+    }
+  }
+  println(dir_size)
+
+@main def tree_1: Unit =
+  var twoDimenstionalList =  scala.collection.mutable.Map[Int, Array[Int]]()
+  var row = 0
+  for(line <- Source.fromFile(tree_file).getLines) {
+    var col = 0
+    val p = line.map(_.asDigit).toArray
+    twoDimenstionalList(row) = p
+    row += 1
+  } 
+  var c = 0
+  var max_scene = 0
+  for ( i <- (1 to row - 2)){
+    for (j <- (1 to row - 2)){
+      val el = twoDimenstionalList(i)(j)
+      var seen = false
+      var left = 0
+      var right = 0
+      var up = 0
+      var down = 0
+      if( el != 0){
+        // go left
+        breakable {
+          for (k <- (j-1) to (0,-1)){
+            if (twoDimenstionalList(i)(k) >= el){
+              left += 1
+              break
+            }
+            left += 1
+          }
+          seen = true
+        }
+        // go right
+        breakable {
+          for (k <- (j+1) to (row - 1)){            
+            if (twoDimenstionalList(i)(k) >= el){
+              right += 1
+              break
+            } 
+            right += 1           
+          }
+          seen = true
+        }
+                // go down        
+        breakable {
+          for (k <- (i+1) to (row - 1)){
+            if (twoDimenstionalList(k)(j) >= el){
+              down +=1
+              break
+            }
+            down += 1
+          }
+          seen = true
+        }
+                // go up
+        breakable {
+          for (k <- (i-1) to (0,-1)){
+            if (twoDimenstionalList(k)(j) >= el){
+              up += 1
+              break
+            }
+            up += 1
+          }
+          seen = true
+        }
+      }
+      if (seen == true) c += 1
+      // println(max_scene)
+      if (max_scene < left*right*up*down) max_scene = left*right*up*down
+    }
+  }
+  println(max_scene)
