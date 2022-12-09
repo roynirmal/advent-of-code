@@ -12,6 +12,7 @@ val cont_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/con
 val sig_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/signal.txt"
 val size_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/filesize.txt"
 val tree_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/tree.txt"
+val rope_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/rope.txt"
 
 @main def maxcalorie: Unit =  
   var c: Int = 0;
@@ -289,3 +290,50 @@ val start_marker: Int = 14;
     }
   }
   println(max_scene)
+
+
+@main def rope_1: Unit =
+  var tail_visits = new ListBuffer[(Int, Int)]()
+  var head_cd = (0,0)
+  var tail_cd = (0,0)
+  def check_tail_near_head(h: (Int, Int), t: (Int, Int)): Boolean = {
+    var poss_coords = new ListBuffer[(Int, Int)]() 
+    val inc = List((0,0), (1,0), (0,1), (-1, 0), (0, -1), (1,1), (1, -1), (-1, 1), (-1, -1))
+    for (i <- inc){
+      poss_coords += ((t(0)+i(0), t(1) +i (1) ) )
+    }
+    if (poss_coords contains h) {
+      return true
+    }
+    return false
+  }
+  for(line <- Source.fromFile(rope_file).getLines) {
+    var dir = line.split(" ")(0)
+    var steps = line.split(" ")(1).toInt
+
+    for (i <- 1 to steps){
+      if (dir == "U"){
+        head_cd = (head_cd(0)+1, head_cd(1))
+      }
+      if (dir == "D"){
+        head_cd = (head_cd(0)-1, head_cd(1))
+      }
+      if (dir == "R"){
+        head_cd = (head_cd(0), head_cd(1)+1)
+      }
+      if (dir == "L"){
+        head_cd = (head_cd(0), head_cd(1)-1)
+      }
+      if (!(check_tail_near_head(head_cd, tail_cd))){
+        if (head_cd(0) == tail_cd(0)){
+          tail_cd = (tail_cd(0), (head_cd(1)- tail_cd(1)).sign + tail_cd(1))
+        } else if (head_cd(1) == tail_cd(1)){
+          tail_cd = ( (head_cd(0)- tail_cd(0)).sign + tail_cd(0), tail_cd(1))
+        } else {
+          tail_cd = ( (head_cd(0)- tail_cd(0)).sign + tail_cd(0), (head_cd(1)- tail_cd(1)).sign + tail_cd(1))
+        }
+      }
+      tail_visits += tail_cd
+    }
+  }
+  println(tail_visits.distinct.length)
