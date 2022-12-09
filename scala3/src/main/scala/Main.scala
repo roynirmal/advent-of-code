@@ -295,7 +295,11 @@ val start_marker: Int = 14;
 @main def rope_1: Unit =
   var tail_visits = new ListBuffer[(Int, Int)]()
   var head_cd = (0,0)
-  var tail_cd = (0,0)
+  var tails =  scala.collection.mutable.Map[Int, (Int, Int)]()
+  for (i <- 1 to 9){
+    tails(i) = ((0,0))
+  }
+  println(tails)
   def check_tail_near_head(h: (Int, Int), t: (Int, Int)): Boolean = {
     var poss_coords = new ListBuffer[(Int, Int)]() 
     val inc = List((0,0), (1,0), (0,1), (-1, 0), (0, -1), (1,1), (1, -1), (-1, 1), (-1, -1))
@@ -324,16 +328,23 @@ val start_marker: Int = 14;
       if (dir == "L"){
         head_cd = (head_cd(0), head_cd(1)-1)
       }
-      if (!(check_tail_near_head(head_cd, tail_cd))){
-        if (head_cd(0) == tail_cd(0)){
-          tail_cd = (tail_cd(0), (head_cd(1)- tail_cd(1)).sign + tail_cd(1))
-        } else if (head_cd(1) == tail_cd(1)){
-          tail_cd = ( (head_cd(0)- tail_cd(0)).sign + tail_cd(0), tail_cd(1))
-        } else {
-          tail_cd = ( (head_cd(0)- tail_cd(0)).sign + tail_cd(0), (head_cd(1)- tail_cd(1)).sign + tail_cd(1))
+      var big_head = head_cd
+      for (i <- 1 to 9){
+        var tail_cd = tails(i)
+        if (!(check_tail_near_head(big_head, tail_cd))){
+          if (big_head(0) == tail_cd(0)){
+            tail_cd = (tail_cd(0), (big_head(1)- tail_cd(1)).sign + tail_cd(1))
+          } else if (big_head(1) == tail_cd(1)){
+            tail_cd = ( (big_head(0)- tail_cd(0)).sign + tail_cd(0), tail_cd(1))
+          } else {
+            tail_cd = ( (big_head(0)- tail_cd(0)).sign + tail_cd(0), (big_head(1)- tail_cd(1)).sign + tail_cd(1))
+          }
         }
+        tails(i) = tail_cd
+        big_head = tails(i)
       }
-      tail_visits += tail_cd
+      // println(tails(9))
+      tail_visits += tails(9)
     }
   }
   println(tail_visits.distinct.length)
