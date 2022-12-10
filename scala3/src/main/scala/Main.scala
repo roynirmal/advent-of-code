@@ -13,6 +13,7 @@ val sig_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/sign
 val size_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/filesize.txt"
 val tree_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/tree.txt"
 val rope_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/rope.txt"
+val noop_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/noop.txt"
 
 @main def maxcalorie: Unit =  
   var c: Int = 0;
@@ -348,3 +349,44 @@ val start_marker: Int = 14;
     }
   }
   println(tail_visits.distinct.length)
+
+@main def noop: Unit = 
+  var X: Int = 1;
+  var clock: Int = 1;
+  val checkpoints = List(20, 60, 100, 140, 180, 220)
+  var output: Int = 0;
+  var pixel: String = "";
+  def check_clock(x_val: Int) : Unit = {
+    clock += 1
+    if (checkpoints contains clock) {
+      output += (x_val*clock)
+    }
+  }
+  def draw_pixel(s_mid: Int) : Unit = {
+    if (List(s_mid, s_mid+1, s_mid-1) contains pixel.length){
+      pixel += "#"
+    } else {
+      pixel += "."
+    }
+    if (clock % 40 == 0){
+      println(pixel)
+      pixel = ""
+    }
+  }
+
+  for(line <- Source.fromFile(noop_file).getLines) {
+    val instruct = line.split(" ")(0)
+    if (instruct == "noop"){
+      check_clock(X)
+      draw_pixel(X)
+    } else {
+      for (i <- 1 to 2){
+        if (i == 2) {
+          X += line.split(" ")(1).toInt
+        }
+        check_clock(X)
+        draw_pixel(X)
+      }
+    }
+  }
+  println(output)
