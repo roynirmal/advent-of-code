@@ -3,6 +3,7 @@ import scala.collection.mutable.ListBuffer
 import scala.util.control.Breaks._
 import scala.collection.mutable.{Map => MutableMap}
 import collection.JavaConverters.seqAsJavaListConverter
+import scala.collection.immutable.ListMap
 // import scala.collection.mutable.{Map => MutableMap, MutableList}
 val filename = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/calorie.txt"
 val rps_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/rps.txt"
@@ -14,6 +15,7 @@ val size_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/fil
 val tree_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/tree.txt"
 val rope_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/rope.txt"
 val noop_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/noop.txt"
+val monkey_file = "/Users/nirmalroy/Desktop/SearchX/advent-of-code/scala3/data/monkey.txt"
 
 @main def maxcalorie: Unit =  
   var c: Int = 0;
@@ -390,3 +392,86 @@ val start_marker: Int = 14;
     }
   }
   println(output)
+
+@main def monkey: Unit = 
+  var monkey_ops =  scala.collection.mutable.Map[Int, (Array[String], Int, Int, Int)]()
+  var monkey_bags =  scala.collection.mutable.Map[Int, List[BigInt]]()
+  var monkey_id: Int = 0
+  var o: Array[String] = Array()
+  var t: Int = 0
+  var tm: Int = 0
+  var fm: Int = 0
+  var num_monkeys: Int = 0
+  for(line <- Source.fromFile(monkey_file).getLines) {
+    var first_char = line.split(" ")(0)
+    if (first_char == "Monkey"){
+      monkey_id = line.split(" ")(1)(0).toString.toInt
+      num_monkeys += 1
+    }  
+    if (first_char == "" & line.split(" ").length > 2){
+      if (line.split(" ")(2) == ""){
+        if (line.split("\\t")(0)(7) == 't'){
+          tm = line.split("\\t")(0).last.toString.toInt
+        } else {
+          fm = line.split("\\t")(0).last.toString.toInt
+        }
+      } else {
+        if (line.split(" ")(2) == "Operation:") {
+          o = line.split(" ").takeRight(2)
+        }
+        if (line.split(" ")(2) == "Test:") {
+          t = line.split(" ").last.toInt
+        }
+        if (line.split(" ")(2) == "Starting") {
+          monkey_bags(monkey_id) = ("""\d+""".r findAllIn line.split(":")(1)).toList.map(_.toInt)
+        }
+      }
+      monkey_ops(monkey_id) = (o, t, tm, fm)
+    }
+  }
+  def update_monkey_bag(mid: Int, item: BigInt): Unit = {
+    var old_bag = monkey_bags(mid)
+    var new_bag = old_bag :+ item
+    monkey_bags(mid) = new_bag
+  }
+  var monkey_counter =  scala.collection.mutable.Map[Int, Int]()
+  var super_module = 1
+  for (m <- 0 to num_monkeys-1){
+    monkey_counter(m) = 0
+    super_module *= monkey_ops(m)(1)
+  }
+  var long_circus = true  
+  var rounds = 0
+  if (long_circus) rounds = 10000 else rounds = 20
+  for (r <- 1 to rounds){
+    for ( m <- 0 to num_monkeys-1){
+      monkey_counter(m) += monkey_bags(m).length      
+      for (item <- monkey_bags(m)){
+        var new_item: BigInt = item
+        if (long_circus) new_item = item % super_module
+        if (monkey_ops(m)(0)(1) == "old"){
+          new_item = new_item * new_item
+        } else {
+          if (monkey_ops(m)(0)(0) == "+"){
+            new_item = new_item +  monkey_ops(m)(0)(1).toInt
+          } else if (monkey_ops(m)(0)(0) == "*"){
+            new_item = new_item *  monkey_ops(m)(0)(1).toInt
+          }
+        }
+        if (!(long_circus)){
+          new_item = new_item / 3
+        } 
+        if (new_item % monkey_ops(m)(1) == 0){
+          update_monkey_bag(monkey_ops(m)(2), new_item)
+        } else {
+          update_monkey_bag(monkey_ops(m)(3), new_item)
+        }
+      }
+      monkey_bags(m) = List()
+    }
+  }
+  // var ans: BigInt = 99999999999L
+  println(ListMap(monkey_counter.toSeq.sortWith(_._2 > _._2):_*).take(2))
+  // println(ans)
+  // println(126487*100597)
+  // println(monkey_bags(2))
